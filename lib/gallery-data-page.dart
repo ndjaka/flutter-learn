@@ -15,15 +15,37 @@ class GalleryDataPage extends StatefulWidget {
 
 class _GalleryDataPageState extends State<GalleryDataPage> {
   int currentPage = 1;
-  int size = 5;
+  int size = 10;
+  int totalPages;
+  ScrollController _scrollController = new ScrollController();
   List<dynamic> hits = [];
   var galleryData;
+
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     this.getData();
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
+        if (currentPage < totalPages) {
+          ++currentPage;
+          this.getData();
+        }
+      }
+    });
+
+
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+     _scrollController.dispose();
   }
 
   getData() {
@@ -32,7 +54,13 @@ class _GalleryDataPageState extends State<GalleryDataPage> {
     http.get(url).then((resp) {
       setState(() {
         galleryData = json.decode(resp.body);
-        hits = galleryData['hits'];
+        hits.addAll(galleryData['hits']);
+
+        if(galleryData['totalHits']%size==0)
+          totalPages = galleryData['totalHits']~/size;
+        else
+          totalPages =1 + (galleryData['totalHits']/size).floor();
+
         print(hits);
       });
     }).catchError((err) {
@@ -44,7 +72,7 @@ class _GalleryDataPageState extends State<GalleryDataPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.keyword),
+        title: Text("${widget.keyword},Page ${currentPage}/${totalPages}"),
         backgroundColor: Colors.deepOrange,
       ),
       body: Center(
@@ -52,6 +80,7 @@ class _GalleryDataPageState extends State<GalleryDataPage> {
             ? CircularProgressIndicator()
             : ListView.builder(
                 itemCount: (galleryData == null ? 0 : hits.length),
+                controller: _scrollController,
                 itemBuilder: (context, index) {
                   return Column(
                     children: <Widget>[

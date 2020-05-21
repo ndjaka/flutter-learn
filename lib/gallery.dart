@@ -13,7 +13,7 @@ class Gallery extends StatefulWidget {
 
 class _GalleryState extends State<Gallery> {
   String keyword="";
-
+  TextEditingController editingController = new TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,6 +30,13 @@ class _GalleryState extends State<Gallery> {
                 this.keyword=value;
               });
            },
+           controller: editingController,
+           decoration: InputDecoration(hintText: 'Tape a place '),
+           onSubmitted: (value){
+           this.keyword = value;
+           Navigator.push(context, MaterialPageRoute(builder: (context)=>GalleryDataPage(this.keyword)));
+            editingController.text="";
+           },
          ),
         padding: EdgeInsets.all(10),
     ),
@@ -40,6 +47,7 @@ class _GalleryState extends State<Gallery> {
          RaisedButton(
            onPressed: (){
              Navigator.push(context, MaterialPageRoute(builder: (context)=>GalleryDataPage(keyword)));
+             editingController.text = "";
            },
            color: Colors.deepOrange,
            padding: EdgeInsets.all(10),
